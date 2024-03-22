@@ -23,6 +23,15 @@ app.use(passport.initialize());
 
 var router = express.Router();
 
+const authorizedMethods = (req, res, next) => {
+    if (req.method !== 'GET' && req.method !== 'POST' && req.method !== 'PUT' && req.method !== 'DELETE') {
+        return res.status(405).send('HTTP Method Not Allowed');
+    }
+    next();
+};
+
+app.use(authorizedMethods);
+
 function getJSONObjectForMovieRequirement(req) {
     var json = {
         headers: "No headers",
@@ -61,7 +70,7 @@ router.post('/signin', (req, res) => {
     if (!user) {
         res.status(401).send({success: false, msg: 'Authentication failed. User not found.'});
     } else {
-        if (req.body.password == user.password) {
+        if (req.body.password === user.password) {
             var userToken = { id: user.id, username: user.username };
             var token = jwt.sign(userToken, process.env.SECRET_KEY);
             res.json ({success: true, token: 'JWT ' + token});
@@ -70,6 +79,10 @@ router.post('/signin', (req, res) => {
             res.status(401).send({success: false, msg: 'Authentication failed.'});
         }
     }
+});
+
+router.all(['/signin', '/signup'], (req, res) => {
+    res.status(405).json({success: false, msg: 'HTTP Method Not Allowed'});
 });
 
 router.route('/testcollection')
