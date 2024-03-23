@@ -5,9 +5,7 @@ Description: Web API scaffolding for Movie API
  */
 
 const express = require('express');
-// var http = require('http');
 const bodyParser = require('body-parser');
-// const passport = require('passport');
 const authController = require('./auth');
 const authJwtController = require('./auth_jwt');
 db = require('./db')(); //hack
@@ -18,8 +16,6 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-
-// app.use(passport.initialize());
 
 const router = express.Router();
 
