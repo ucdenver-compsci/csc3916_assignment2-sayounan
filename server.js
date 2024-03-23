@@ -71,7 +71,7 @@ router.route('/signin')
                 var userToken = { id: user.id, username: user.username };
                 var token = jwt.sign(userToken, process.env.UNIQUE_KEY);
                 var cred = btoa("younans:password123")
-                res.json ({success: true, token: 'JWT ' + token, basic: cred});
+                res.json ({success: true, token: 'JWT ' + token, basic: 'Basic ' + cred});
             } else {
                 res.status(401).send({success: false, msg: 'Authentication failed.'});
             }
