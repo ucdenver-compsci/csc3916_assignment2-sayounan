@@ -4,27 +4,27 @@ File: Server.js
 Description: Web API scaffolding for Movie API
  */
 
-var express = require('express');
-var http = require('http');
-var bodyParser = require('body-parser');
-var passport = require('passport');
-var authController = require('./auth');
-var authJwtController = require('./auth_jwt');
+const express = require('express');
+// var http = require('http');
+const bodyParser = require('body-parser');
+// const passport = require('passport');
+const authController = require('./auth');
+const authJwtController = require('./auth_jwt');
 db = require('./db')(); //hack
-var jwt = require('jsonwebtoken');
-var cors = require('cors');
+const jwt = require('jsonwebtoken');
+const cors = require('cors');
 
-var app = express();
+const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.use(passport.initialize());
+// app.use(passport.initialize());
 
-var router = express.Router();
+const router = express.Router();
 
 function getJSONObjectForMovieRequirement(req) {
-    var json = {
+    const json = {
         headers: "No headers",
         key: process.env.UNIQUE_KEY,
         body: "No body"
@@ -46,7 +46,7 @@ router.route('/signup')
         if (!req.body.username || !req.body.password) {
             res.json({success: false, msg: 'Please include both username and password to signup.'})
         } else {
-            var newUser = {
+            const newUser = {
                 username: req.body.username,
                 password: req.body.password
             };
@@ -62,15 +62,15 @@ router.route('/signup')
 
 router.route('/signin')
     .post((req, res) => {
-        var user = db.findOne(req.body.username);
+        const user = db.findOne(req.body.username);
 
         if (!user) {
             res.status(401).send({success: false, msg: 'Authentication failed. User not found.'});
         } else {
             if (req.body.password === user.password) {
-                var userToken = { id: user.id, username: user.username };
-                var token = jwt.sign(userToken, process.env.UNIQUE_KEY);
-                var cred = btoa("younans:password123")
+                const userToken = {id: user.id, username: user.username};
+                const token = jwt.sign(userToken, process.env.UNIQUE_KEY);
+                const cred = btoa("younans:password123");
                 res.json ({success: true, token: 'JWT ' + token, basic: 'Basic ' + cred});
             } else {
                 res.status(401).send({success: false, msg: 'Authentication failed.'});
@@ -85,7 +85,7 @@ router.route('/signin')
 
 router.route('/movies')
     .get((req, res) => {
-        var o = getJSONObjectForMovieRequirement(req);
+        const o = getJSONObjectForMovieRequirement(req);
         o.status = 200;
         o.message = "GET Movies";
         res.status(200).json(o);
@@ -94,21 +94,21 @@ router.route('/movies')
     .post((req, res) => {
         const newMovie = { title: req.body.title, year: req.body.year }
         db.save(newMovie)
-        var o = getJSONObjectForMovieRequirement(req);
+        const o = getJSONObjectForMovieRequirement(req);
         o.status = 200;
         o.message = "Movie Saved";
         res.status(200).json(o);
     })
 
     .put(authJwtController.isAuthenticated, (req, res) => {
-        var o = getJSONObjectForMovieRequirement(req);
+        const o = getJSONObjectForMovieRequirement(req);
         o.status = 200;
         o.message = "Movie Updated";
         res.status(200).json(o);
     })
 
     .delete(authController.isAuthenticated, (req, res) => {
-        var o = getJSONObjectForMovieRequirement(req);
+        const o = getJSONObjectForMovieRequirement(req);
         o.status = 200;
         o.message = "movie deleted";
         res.json(o);
@@ -125,8 +125,8 @@ router.route('/testcollection')
         if (req.get('Content-Type')) {
             res = res.type(req.get('Content-Type'));
         }
-        var o = getJSONObjectForMovieRequirement(req);
-        res.json(o);
+            const o = getJSONObjectForMovieRequirement(req);
+            res.json(o);
     }
     )
     .put(authJwtController.isAuthenticated, (req, res) => {
@@ -135,8 +135,8 @@ router.route('/testcollection')
         if (req.get('Content-Type')) {
             res = res.type(req.get('Content-Type'));
         }
-        var o = getJSONObjectForMovieRequirement(req);
-        res.json(o);
+            const o = getJSONObjectForMovieRequirement(req);
+            res.json(o);
     }
     );
     
