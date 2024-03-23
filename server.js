@@ -23,15 +23,6 @@ app.use(passport.initialize());
 
 var router = express.Router();
 
-const authorizedMethods = (req, res, next) => {
-    if (req.method !== 'GET' && req.method !== 'POST' && req.method !== 'PUT' && req.method !== 'DELETE') {
-        return res.status(405).send('HTTP Method Not Allowed');
-    }
-    next();
-};
-
-app.use(authorizedMethods);
-
 function getJSONObjectForMovieRequirement(req) {
     var json = {
         headers: "No headers",
@@ -50,40 +41,81 @@ function getJSONObjectForMovieRequirement(req) {
     return json;
 }
 
-router.post('/signup', (req, res) => {
-    if (!req.body.username || !req.body.password) {
-        res.json({success: false, msg: 'Please include both username and password to signup.'})
-    } else {
-        var newUser = {
-            username: req.body.username,
-            password: req.body.password
-        };
+router.route('/signup')
+    .post( (req, res) => {
+        if (!req.body.username || !req.body.password) {
+            res.json({success: false, msg: 'Please include both username and password to signup.'})
+        } else {
+            var newUser = {
+                username: req.body.username,
+                password: req.body.password
+            };
 
-        db.save(newUser); //no duplicate checking
-        res.json({success: true, msg: 'Successfully created new user.'})
-    }
-});
-
-router.post('/signin', (req, res) => {
-    var user = db.findOne(req.body.username);
-
-    if (!user) {
-        res.status(401).send({success: false, msg: 'Authentication failed. User not found.'});
-    } else {
-        if (req.body.password === user.password) {
-            var userToken = { id: user.id, username: user.username };
-            var token = jwt.sign(userToken, process.env.SECRET_KEY);
-            res.json ({success: true, token: 'JWT ' + token});
+            db.save(newUser); //no duplicate checking
+            res.json({success: true, msg: 'Successfully created new user.'})
         }
-        else {
-            res.status(401).send({success: false, msg: 'Authentication failed.'});
-        }
-    }
-});
+    })
 
-router.all(['/signin', '/signup'], (req, res) => {
-    res.status(405).json({success: false, msg: 'HTTP Method Not Allowed'});
-});
+    .all((req, res) => {
+        res.status(405).json({success: false, msg: 'HTTP Method Not Allowed'});
+    });
+
+router.route('/signin')
+    .post((req, res) => {
+        var user = db.findOne(req.body.username);
+
+        if (!user) {
+            res.status(401).send({success: false, msg: 'Authentication failed. User not found.'});
+        } else {
+            if (req.body.password === user.password) {
+                var userToken = { id: user.id, username: user.username };
+                var token = jwt.sign(userToken, process.env.UNIQUE_KEY);
+                res.json ({success: true, token: 'JWT ' + token});
+            } else {
+                res.status(401).send({success: false, msg: 'Authentication failed.'});
+            }
+        }
+
+    })
+
+    .all((req, res) => {
+        res.status(405).json({success: false, msg: 'HTTP Method Not Allowed'});
+    });
+
+router.route('/movies')
+    .get((req, res) => {
+        var o = getJSONObjectForMovieRequirement(req);
+        o.status = 200;
+        o.message = "GET Movies";
+        res.status(200).json(o);
+    })
+
+    .post((req, res) => {
+        const newMovie = { title: req.body.title, year: req.body.year }
+        db.save(newMovie)
+        var o = getJSONObjectForMovieRequirement(req);
+        o.status = 200;
+        o.message = "Movie Saved";
+        res.status(200).json(o);
+    })
+
+    .put(authJwtController.isAuthenticated, (req, res) => {
+        var o = getJSONObjectForMovieRequirement(req);
+        o.status = 200;
+        o.message = "Movie Updated";
+        res.status(200).json(o);
+    })
+
+    .delete(authController.isAuthenticated, (req, res) => {
+        var o = getJSONObjectForMovieRequirement(req);
+        o.status = 200;
+        o.message = "movie deleted";
+        res.json(o);
+    })
+
+    .all((req, res) => {
+        res.status(405).json({success: false, msg: 'HTTP Method Not Allowed'});
+    })
 
 router.route('/testcollection')
     .delete(authController.isAuthenticated, (req, res) => {
