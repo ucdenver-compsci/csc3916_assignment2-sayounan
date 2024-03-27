@@ -66,7 +66,7 @@ router.route('/signin')
             if (req.body.password === user.password) {
                 const userToken = {id: user.id, username: user.username};
                 const token = jwt.sign(userToken, process.env.UNIQUE_KEY);
-                res.json ({success: true, token: 'JWT ' + token, basic: 'Basic ' + cred});
+                res.json ({success: true, token: 'JWT ' + token});
             } else {
                 res.status(401).send({success: false, msg: 'Authentication failed.'});
             }
